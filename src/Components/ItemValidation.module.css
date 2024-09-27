@@ -1,0 +1,14 @@
+.hide {
+    max-height: 0;
+    overflow: hidden;
+    border: none;
+    font: Arial, Helvetica, sans-serif;
+    font-style: italic;
+    transition: max-height 3s;
+}
+
+.visible {
+    max-height: 100%;
+    border: 1px solid gray;
+    transition: max-height 3s;
+}
