@@ -6,14 +6,17 @@ import CompanyOperator from "../../Components/CompanyOperator";
 function AjouterDemandePR({ pr }) {
     const form = useForm({
         defaultValues: {
-
+            associes: [{}]
         }
     });
-    const { register, handleSubmit, reset, formState } = form;
+
+    const { register, handleSubmit, reset, control, formState } = form;
     const { errors, isSubmitted, isSubmitSuccessful, isSubmitting } = formState
+    const [options, setOptions] = useState([])
     const [switchOperator, setSwitchOperator] = useState("Company");
     const [showOperator, setShowOperator] = useState(true);
     const [showLicence, setShowLicence] = useState(true);
+    const [linkErrors, setLinkErrors] = useState('');
     const errorStyle = { color: "red", fontStyle: "italic" };
 
     useEffect(() => {
@@ -21,19 +24,78 @@ function AjouterDemandePR({ pr }) {
             reset()
     }, [isSubmitSuccessful, reset])
 
+    useEffect(() => {
+        try {
+            const fetchSubstances = async () => {
+                const response = await fetch('http://localhost:8080/api/v1/substances')
+                if (!response.ok)
+                    throw new Error("Impossible de charger la liste des substances")
+
+                const substances = await response.json();
+                setOptions(substances)
+            }
+            fetchSubstances()
+        } catch (err) {
+            setLinkErrors(err.message)
+        }
+    }, [])
+
     const onSubmit = async (data) => {
-        console.log(data)
+
+        const associes = data.associes;
+
+        const substances = data.substances.map(
+            x => (options[x])
+        )
+
+        const companyOperator = {
+            denomination: data.denomination ?? null,
+            raisonSociale: data.raisonSociale ?? null,
+            capitalSocial: data.capitalSocial ?? null,
+            nationalite: data.nationalite ?? null,
+            rccm: data.rccm ?? null,
+            objectPrincipal: data.objectPrincipal ?? null,
+            siegeBoitePostale: data.siege ?? null,
+            contact: data.contact ?? null,
+            responsableTechnique: data.respoTech ?? null,
+            associes: associes
+        }
+
+        const singleOperator = {
+            nom: data.nom ?? null,
+            prenoms: data.prenoms ?? null,
+            sexe: data.sexe ?? null,
+            mobile: data.mobile ?? null,
+            bureau: data.bureau ?? null,
+            email: data.email ?? null,
+            addresse: data.adresse ?? null
+        }
+
+        const demande = {
+            "numeroDeDemande": data.numeroDeDemande,
+            "localite": data.localite,
+            "superficie": data.superficie,
+            "investissement": data.investissement,
+            "fraisAdministration": data.fraisAdministration,
+            "emploisPrevus": data.emploisPrevus,
+            "emploisTemporaires": data.emploisTemporaires,
+            "dateDeSoumission": data.dateDeSoumission,
+            "companyOperator": companyOperator,
+            "singleOperator": singleOperator,
+            "statut": data.statut,
+            "substances": substances
+        }
+
         const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes', {
             method: "POST",
             headers: {
                 "Content-type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(demande)
         })
         if (response.ok) {
 
         }
-        console.log("Données", response);
     }
 
     const handleOptions = (e) => {
@@ -70,8 +132,8 @@ function AjouterDemandePR({ pr }) {
                             </select>
                         </div>
                         {
-                            switchOperator === "Person" ? <SingleOperator register={register} /> : <CompanyOperator register={register}
-                                errors={errors} />
+                            switchOperator === "Person" ? <SingleOperator register={register} /> :
+                                <CompanyOperator register={register} control={control} errors={errors} />
                         }
                     </div>
 
@@ -124,12 +186,12 @@ function AjouterDemandePR({ pr }) {
                         <div className="mb-3">
                             <label className="form-label" htmlFor="substances">Substance</label>
                             <select id="substances" className="form-control" name="substances"
-                                {...register("substances")}>
-                                <option>Argent</option>
-                                <option>Manganèse</option>
-                                <option>Nickel</option>
-                                <option>Or</option>
-                                <option>Phosphore</option>
+                                {...register("substances")} multiple>
+                                {
+                                    options.map((option, index) => (
+                                        <option key={option.id} value={index}>{option.substance}</option>
+                                    ))
+                                }
                             </select>
                         </div>
                         <div className="mb-3">

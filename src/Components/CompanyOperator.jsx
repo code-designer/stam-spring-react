@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Associes from "./Associes.jsx"
 
-function CompanyOperator({ operator, register, errors }) {
+function CompanyOperator({ operator, register, errors, control }) {
     const errorStyle = { color: "red", fontStyle: "italic" };
     return (
         <div className="mb-3" id="company">
@@ -41,10 +41,10 @@ function CompanyOperator({ operator, register, errors }) {
             </div>
             <div className="mb-3">
                 <label className="form-label">Repartition du capital</label>
-                <Associes />
+                <Associes register={register} errors={errors} control={control} />
             </div>
             <div className="mb-3">
-                <label className="form-label" htmlFor="objetPrincipal">Object principal</label>
+                <label className="form-label" htmlFor="objetPrincipal">Objet principal</label>
                 <input type="text" className="form-control" name="objetPrincipal" id="objetPrincipal"
                     {...register("objetPrincipal")} />
             </div>

@@ -4,30 +4,27 @@ import { Link } from 'react-router-dom';
 
 function ListerDemandesPR() {
     const [keyword, setKeyword] = useState("");
-    const [selectedRows, setSelectedRows] = useState([])
-    const [checkedAll, setCheckedAll] = useState(false)
+    const [demandes, setDemandes] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [checkedAll, setCheckedAll] = useState(false);
 
-    const originals = [
-        {
-            delivranceNumber: "ldsfoiofsd", numberTaxPayer: "098hdjed", domain: "lmsjdfks",
-            expirationDate: "20/04/2019", companyOperator: {
-                companyName: "Mining Gold"
-            }
-        },
-        {
-            delivranceNumber: "nsdfslie", numberTaxPayer: "sdfjkl86", domain: "aksdjfi",
-            expirationDate: "18/11/2021", companyOperator: {
-                companyName: "Mining Silver"
-            }
-        },
-        {
-            delivranceNumber: "apsdkfj", numberTaxPayer: "9kdjfd6k", domain: "xlodfwpde",
-            expirationDate: "08/07/2017", singleOperator: {
-                fisrtName: "Regis Alfred",
-                lastName: "Yao"
+    useEffect(() => {
+        const listeDeDemande = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes');
+                if (!response.ok)
+                    throw new Error("Impossible de charge la liste");
+
+                const demandePR = await response.json();
+                setDemandes(demandePR)
+            } catch (err) {
+                console.log(err)
             }
         }
-    ];
+
+        listeDeDemande();
+        console.log(demandes);
+    }, [])
 
     const handleChange = (id) => {
         setSelectedRows((prevSelectedRows) => (
@@ -41,18 +38,19 @@ function ListerDemandesPR() {
         setCheckedAll(!checkedAll)
     }
 
-    const rows = originals.map((element, index) => (
+    const rows = demandes.map((element, index) => (
         <tr key={index} className="table-row" onClick={() => handleChange(index)}>
             <td><input className="form-check-input" type="checkbox"
-                name={element.delivranceNumber} id={element.delivranceNumber}
+                name={element.numeroDeDemande} id={element.numeroDeDemande}
                 checked={selectedRows.includes(index) || checkedAll}
                 onChange={() => (null)} /></td>
-            <td>{element.delivranceNumber}</td>
-            <td>{element.numberTaxPayer}</td>
-            <td>{(element.singleOperator?.fisrtName) ?? element.companyOperator?.companyName}</td>
-            <td>{element.domain}</td>
-            <td>{element.expirationDate}</td>
-            <td>Valide</td>
+            <td>{element.numeroDeDemande}</td>
+            <td>{element.companyOperator ? element.companyOperator.denomination :
+                element.singleOperator.name}</td>
+            <td>{element.rccm}</td>
+            <td>{element.localite}</td>
+            <td>{element.dateDeSoumission}</td>
+            <td>{element.statut}</td>
         </tr>)
     );
 
@@ -64,6 +62,8 @@ function ListerDemandesPR() {
                     <div className="me-3">
                         <Link to="/permis-recherche/demandes/nouveau" className='btn'><i className='bi bi-plus'></i></Link>
                         <a href="http://" className='btn'><i className='bi bi-trash'></i></a>
+                        <Link to="/" className='btn'>Fiche de verification</Link>
+                        <Link to="/" className='btn' aria-disabled>Fond du dossier</Link>
                     </div>
                     <div className="me-3">
                         <SearchBar onSearch={setKeyword} />

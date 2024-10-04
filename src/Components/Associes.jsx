@@ -1,73 +1,52 @@
 import { useState } from "react";
+import { useFieldArray } from "react-hook-form";
 
-function Associes(register) {
-    const [associes, setAssocies] = useState([{
-        nom: "",
-        nationalite: "",
-        part: ""
-    }])
+function Associes({ register, errors, control }) {
 
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'associes'
+    })
+
+    const errorStyle = { color: "red", fontStyle: "italic" };
     const style = {
         border: "none"
     }
 
-    const handleAddRow = (e) => {
-        e.preventDefault()
-        const associe = {
-            nom: "",
-            nationalite: "",
-            part: ""
-        }
-        setAssocies([...associes, associe])
+    const handleDelRow = (i) => {
+        if (i > 0)
+            remove(i - 1)
     }
 
-    const handleDelRow = (e) => {
-        e.preventDefault()
-        const lastIndex = associes.length > 0 ? associes.length - 1 : -1;
-        let rows = [...associes]
-        if (lastIndex > 0)
-            rows.splice(lastIndex, 1)
-        setAssocies(rows)
-
-    }
-
-    const updateRow = (e, index) => {
-        const { name, value } = e.target
-        const rows = [...associes]
-        rows[index][name] = value
-        setAssocies(rows)
-        console.log(associes)
-    }
-
-    const rows = associes.map((associe, index) => (
-        <tr key={index}>
-            <td><input type="text" id={"nom-" + index} name={"nom-" + index} value={associe.nom} style={style}
-                onChange={(e) => updateRow(e, index)} className="w-100"
-                {...register("nom" + index, {
+    const rows = fields.map((field, index) => (
+        < tr key={field.id} >
+            <td><input type="text" style={style}
+                className="w-100"
+                {...register(`associes.${index}.nomAssocie`, {
                     required: {
                         value: true,
                         message: "Tous les champs de cette ligne sont obligatoires"
                     }
                 })} /></td>
 
-            <td><input type="text" id={"nationalite-" + index} name={"nationalite-" + index}
-                value={associe.nationalite} style={style} onChange={(e) => updateRow(e, index)}
-                className="w-100" {...register("nom" + index, {
+            <td><input type="text"
+                style={style}
+                className="w-100" {...register(`associes.${index}.nationaliteAssocie`, {
                     required: {
                         value: true,
                         message: "Tous les champs de cette ligne sont obligatoires"
                     }
                 })} /></td>
 
-            <td><input type="number" id={"part-" + index} name={"part-" + index} value={associe.part} style={style}
-                onChange={(e) => updateRow(e, index)} className="w-100"
-                {...register("nom" + index, {
+            <td><input type="number" style={style}
+                className="w-100"
+                {...register(`associes.${index}.partAssocie`, {
                     required: {
                         value: true,
                         message: "Tous les champs de cette ligne sont obligatoires"
                     }
                 })} /></td>
-        </tr>
+        </tr >
     ))
 
     return (
@@ -84,10 +63,13 @@ function Associes(register) {
                     {rows}
                 </tbody>
             </table>
-            <p style={errorStyle}>{errors.length !== 0 ??
-                "Tous les champs de cette ligne sont obligatoires"}</p>
-            <button onClick={(e) => handleAddRow(e)} className="m-1"><i className="bi bi-plus"></i></button>
-            <button onClick={(e) => handleDelRow(e)} className="m-1"><i className="bi bi-trash"></i></button>
+            <p style={errorStyle}>{errors.length !== 0 ? "Tous les champs de cette ligne sont obligatoires" : ""}</p>
+            <button type="button"
+                onClick={() => append({ nomAssocie: "", nationaliteAssocie: "", partAssocie: "" })}
+                className="m-1"><i className="bi bi-plus"></i></button>
+            <button type="button"
+                onClick={() => handleDelRow(fields.length)}
+                className="m-1"><i className="bi bi-trash"></i></button>
         </div>
     )
 }
