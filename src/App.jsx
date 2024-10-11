@@ -108,7 +108,7 @@ const router = createBrowserRouter([
         element: <div>Demande PR</div>
       },
       {
-        path: "/permis-recherche/demandes/:id/validation",
+        path: "/permis-recherche/demandes/:id/fiche-de-verification",
         element: <ValidationPR />
       },
       {

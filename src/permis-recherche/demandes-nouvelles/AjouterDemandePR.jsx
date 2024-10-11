@@ -10,20 +10,37 @@ function AjouterDemandePR({ pr }) {
         }
     });
 
-    const { register, handleSubmit, reset, control, formState } = form;
+    /**
+     * useState
+     * register, handleSubmit, rest, control and formState are the result of form destructuration
+     * errors, isSubmitted, isSubmitSuccessful, isSubmitting are the result of form destructuration
+     * options is used to populate select options 
+     * switchOperator allows to choose a campany operator or a single operator
+     * Both showOperator and showLicence allow to hide or show details of sections
+     * linkErrors is used to stored message errors
+     */
+
+    const { register, handleSubmit, reset, control, formState, watch, setValue } = form;
     const { errors, isSubmitted, isSubmitSuccessful, isSubmitting } = formState
     const [options, setOptions] = useState([])
     const [switchOperator, setSwitchOperator] = useState("Company");
     const [showOperator, setShowOperator] = useState(true);
     const [showLicence, setShowLicence] = useState(true);
     const [linkErrors, setLinkErrors] = useState('');
+
+    /** an object to style error message */
     const errorStyle = { color: "red", fontStyle: "italic" };
 
+    const [fraisAdministration, investissement, superficie]
+        = watch(['fraisAdministration', 'investissement', 'superficie'])
+
+    /**This function allow the reset of the form */
     useEffect(() => {
         if (isSubmitSuccessful)
             reset()
     }, [isSubmitSuccessful, reset])
 
+    /**This function loads all the substances to populate the Select Options HTML elements */
     useEffect(() => {
         try {
             const fetchSubstances = async () => {
@@ -40,6 +57,17 @@ function AjouterDemandePR({ pr }) {
         }
     }, [])
 
+    /**This functin is intented to fill the input budgetTravaux and radio which can be only read */
+    useEffect(() => {
+        const budget = (investissement && fraisAdministration) ? investissement - fraisAdministration : 0;
+        const rapport = (budget && superficie) ? (Math.round((budget / superficie) / 1000) / 1000) : 0;
+        console.log(superficie, investissement, fraisAdministration, budget, rapport)
+        setValue('budgetTravaux', budget);
+        setValue('ratios', rapport);
+
+    }, [fraisAdministration, investissement, superficie, setValue])
+
+    /**This function is used to submit the form data */
     const onSubmit = async (data) => {
 
         const associes = data.associes;
@@ -54,7 +82,7 @@ function AjouterDemandePR({ pr }) {
             capitalSocial: data.capitalSocial ?? null,
             nationalite: data.nationalite ?? null,
             rccm: data.rccm ?? null,
-            objectPrincipal: data.objectPrincipal ?? null,
+            objetPrincipal: data.objetPrincipal ?? null,
             siegeBoitePostale: data.siege ?? null,
             contact: data.contact ?? null,
             responsableTechnique: data.respoTech ?? null,
@@ -83,7 +111,8 @@ function AjouterDemandePR({ pr }) {
             "companyOperator": companyOperator,
             "singleOperator": singleOperator,
             "statut": data.statut,
-            "substances": substances
+            "substances": substances,
+            "ficheVerification": {}
         }
 
         const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes', {
@@ -112,6 +141,12 @@ function AjouterDemandePR({ pr }) {
 
     return (
         <>
+            {
+                isSubmitSuccessful &&
+                <div style={{ backgroundColor: "green" }}>
+                    <p style={{ textAlign: "center" }}>La demande a bien été enrégistrée</p>
+                </div>
+            }
             <div className="w-sm-100  w-75 mx-auto my-3 shadow">
                 <h3 className="text-center rounded-top p-3 bg-info">Ajouter une demande de PR</h3>
                 <form action="" method="post" className="form p-4" onSubmit={handleSubmit(onSubmit)}>
@@ -133,7 +168,8 @@ function AjouterDemandePR({ pr }) {
                         </div>
                         {
                             switchOperator === "Person" ? <SingleOperator register={register} /> :
-                                <CompanyOperator register={register} control={control} errors={errors} />
+                                <CompanyOperator register={register} control={control} errors={errors}
+                                    setValue={setValue} />
                         }
                     </div>
 
@@ -171,8 +207,8 @@ function AjouterDemandePR({ pr }) {
                         </div>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="superficie">Superficie (km<sup>2</sup>)</label>
-                            <input type="number" step="0.01" className="form-control" name="superficie"
-                                id="superficie" {...register("superficie",
+                            <input type="number" step="0.01" className="form-control"
+                                {...register("superficie",
                                     {
                                         required: {
                                             value: true,
@@ -185,7 +221,7 @@ function AjouterDemandePR({ pr }) {
                         </div>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="substances">Substance</label>
-                            <select id="substances" className="form-control" name="substances"
+                            <select id="substances" className="form-control"
                                 {...register("substances")} multiple>
                                 {
                                     options.map((option, index) => (
@@ -227,9 +263,10 @@ function AjouterDemandePR({ pr }) {
                                 id="budgetTravaux" {...register("budgetTravaux")} readOnly />
                         </div>
                         <div className="mb-3">
-                            <label className="form-label" htmlFor="ratio">Ratio budget prévisonnel des travaux sur la superficie sollicitée</label>
-                            <input type="number" step="0.01" className="form-control" name="ratio"
-                                id="ratio" {...register("ratio")} readOnly />
+                            <label className="form-label" htmlFor="ratios">Ratio budget prévisonnel des
+                                travaux sur la superficie sollicitée (millions /km<sup>2</sup>)</label>
+                            <input type="number" step="0.01" className="form-control"
+                                {...register("ratios")} readOnly />
                         </div>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="emploisPrevus">Emplois prévus</label>

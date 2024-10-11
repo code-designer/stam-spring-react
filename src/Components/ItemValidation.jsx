@@ -2,7 +2,7 @@ import { useState } from "react";
 import ToggleButton from "./ToggleButton";
 
 
-function ItemValidation({ id, summary, children, register, yes, no }) {
+function ItemValidation({ id, summary, children, register, getValues, yes, no }) {
     const [showDetails, setShowDetails] = useState(false);
 
     const handleClick = () => {
@@ -24,7 +24,7 @@ function ItemValidation({ id, summary, children, register, yes, no }) {
         <div className="mb-3">
             <div style={{ cursor: "pointer" }} className="d-flex justify-content-between border border-info p-2" onClick={handleClick}>
                 <p >{summary}</p>
-                <ToggleButton id={id} register={register} yes={yes} no={no} />
+                <ToggleButton id={id} register={register} yes={yes} no={no} getValues={getValues} />
             </div>
             <div style={showDetails && children !== undefined ? visible : hide}>
                 {children}

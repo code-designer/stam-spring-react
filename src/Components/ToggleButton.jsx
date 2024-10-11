@@ -1,7 +1,7 @@
 import { render } from '@react-pdf/renderer';
 import { useState } from 'react';
 
-function ToggleButton({ id, onCallBack, register, yes = "Present", no = "Absent" }) {
+function ToggleButton({ id, onCallBack, register, getValues, yes = "Present", no = "Absent" }) {
     const [checked, setChecked] = useState(false)
     const hide = {
         display: "none"
@@ -22,17 +22,20 @@ function ToggleButton({ id, onCallBack, register, yes = "Present", no = "Absent"
     }
 
     const handleClick = () => {
-        setChecked(!checked)
+        //setValue(id, true)
+        setChecked(prev => !prev)
     }
 
-    const handleChange = () => {
-        onCallBack({ [id]: checked })
+    const handleChange = (e) => {
+        //onCallBack({ [id]: checked })
+
+        setChecked(e.target.checked)
     }
 
     return (
         <div style={div}>
             <input type="checkbox" onChange={handleChange}
-                style={hide} id={id} name={id} checked={checked} {...register(id)} />
+                style={hide} id={id} name={id}  {...register(id)} />
             <label htmlFor={id} style={style} onClick={handleClick}>{checked ? yes : no}</label>
         </div>
     )

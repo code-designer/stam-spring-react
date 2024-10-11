@@ -7,6 +7,8 @@ function ListerDemandesPR() {
     const [demandes, setDemandes] = useState([]);
     const [selectedRows, setSelectedRows] = useState([]);
     const [checkedAll, setCheckedAll] = useState(false);
+    //const [activeVerification, setActiveVerification] = useState(false);
+    //const [activeFondDossier, setActiveFondDossier] = useState(false);
 
     useEffect(() => {
         const listeDeDemande = async () => {
@@ -32,6 +34,8 @@ function ListerDemandesPR() {
                 prevSelectedRows.filter((rowId) => rowId !== id) :
                 [...prevSelectedRows, id]
         ))
+        if (selectedRows.length === 1)
+            setActiveFondDossier(!activeFondDossier)
     }
 
     const handleCheckedAll = (e) => {
@@ -62,8 +66,22 @@ function ListerDemandesPR() {
                     <div className="me-3">
                         <Link to="/permis-recherche/demandes/nouveau" className='btn'><i className='bi bi-plus'></i></Link>
                         <a href="http://" className='btn'><i className='bi bi-trash'></i></a>
-                        <Link to="/" className='btn'>Fiche de verification</Link>
-                        <Link to="/" className='btn' aria-disabled>Fond du dossier</Link>
+
+                        <Link to={"/permis-recherche/demandes/" +
+                            (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
+                            "/fiche-de-verification"}
+                            className={(selectedRows.length === 1) ? 'btn' : 'btn disabled'}>Fiche de verification
+                        </Link>
+
+                        <Link to={"/permis-recherche/demandes/" +
+                            (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
+                            "/fond-de-dossier"}
+
+                            className={(selectedRows.length === 1 &&
+                                demandes[selectedRows[0]].statut === 'COMPLET') ? 'btn' : 'btn disabled'}>
+                            Fond du dossier
+                        </Link>
+
                     </div>
                     <div className="me-3">
                         <SearchBar onSearch={setKeyword} />
