@@ -1,8 +1,8 @@
-import { render } from '@react-pdf/renderer';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-function ToggleButton({ id, onCallBack, register, getValues, yes = "Present", no = "Absent" }) {
-    const [checked, setChecked] = useState(false)
+function ToggleButton({ id, register, defaultValue, yes = "Present", no = "Absent" }) {
+    const [checked, setChecked] = useState(defaultValue)
+
     const hide = {
         display: "none"
     }
@@ -21,14 +21,15 @@ function ToggleButton({ id, onCallBack, register, getValues, yes = "Present", no
         width: "fit-content"
     }
 
+    useEffect(() => {
+
+    }, [])
+
     const handleClick = () => {
-        //setValue(id, true)
         setChecked(prev => !prev)
     }
 
     const handleChange = (e) => {
-        //onCallBack({ [id]: checked })
-
         setChecked(e.target.checked)
     }
 

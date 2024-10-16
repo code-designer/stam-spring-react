@@ -1,90 +1,33 @@
 import { useForm } from "react-hook-form";
 import ItemValidation from "../../Components/ItemValidation";
-import ToggleButton from "../../Components/ToggleButton";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-function ValidationPR({ dataValidate }) {
+function ValidationPR() {
     const params = useParams();
     const [messageError, setMessageError] = useState(null)
-    const [demandePR, setDemandePR] = useState(null)
-
-    const { register, handleSubmit, formState, reset } = useForm({
-        defaultValues: {
-            lettreDemande: dataValidate?.lettreDemande ?? false,
-            carteDeZone: dataValidate?.carteDeZone ?? false,
-            extraitDeCarte: dataValidate?.extraitDeCarte ?? false,
-            statuts: dataValidate?.statuts ?? false,
-            extraitCasierJudiciaire: dataValidate?.extraitCasierJudiciaire ?? false,
-            compteContribuable: dataValidate?.compteContribuable ?? false,
-            rccm: dataValidate?.rccm ?? false,
-            programmeGeneral: dataValidate?.programmeGeneral ?? false,
-            programmeDetaille: dataValidate?.programmeDetaille ?? false,
-            listeDesPostes: dataValidate?.listeDesPostes ?? false,
-            lettreDesignation: dataValidate?.lettreDesignation ?? false,
-            cvRT: dataValidate?.cvRT ?? false,
-            diplomes: dataValidate?.diplomes ?? false,
-            memoire: dataValidate?.memoire ?? false,
-            attestation: dataValidate?.attestation ?? false,
-            releve: dataValidate?.releve ?? false,
-            arf: dataValidate?.arf ?? false,
-            droitFixe: dataValidate?.droitFixe ?? false,
-            declaration: dataValidate?.declaration ?? false,
-            lettreConsentement: dataValidate?.lettreConsentement ?? false
-        }
-    });
-
-    const { isSubmitSuccessful, isSubmitted, isSubmitting } = formState;
+    const [fiche, setFiche] = useState(null)
 
     useEffect(() => {
-        if (isSubmitSuccessful)
-            reset()
-    }, [isSubmitSuccessful, reset])
-
-    useEffect(() => {
-        /*
-        fetch('http://localhost:8080/api/v1/permis-recherche/demandes/' + params.id)
-            .then(response => {
-                if (!response.ok) {
-                    setMessageError("Impossible de se connecter au serveur,veuillez réessayer plus tard")
-                    throw new Error("Impossible de recuperer la demande")
-                }
-                return response;
-            })
-            .then(response => {
-                const demandes = response.json();
-                if (demandes.length === 0) {
-                    setMessageError(`La demande de PR N° ${params.id.replaceAll('-', '/')} n'existe pas. 
-                                Impossible de charger la fiche de verification`)
-                }
-                if (demandes.length !== 0)
-                    setDemandePR(demandes[0])
-            })
-            .catch(err => {
-                console.log(err)
-            })
-        */
-
         try {
-            const getDemande = async () => {
-                const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes/' +
-                    params.id);
+            const getDefaultFiche = async () => {
+                const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/
+                    ${params.id}/fiche-de-verification`);
                 if (!response.ok) {
-                    setMessageError("Impossible de se connecter au serveur,veuillez réessayer plus tard")
+                    setMessageError("Impossible de se connecter au serveur, veuillez réessayer plus tard")
                     throw new Error("Impossible de recuperer la demande")
                 }
 
-                const demandes = await response.json();
+                const verif = await response.json();
 
-                if (demandes.length === 0) {
+                if (verif === null) {
                     setMessageError(`La demande de PR N° ${params.id.replaceAll('-', '/')} n'existe pas. 
                                 Impossible de charger la fiche de verification`)
                 }
 
-                if (demandes.length !== 0)
-                    setDemandePR(demandes[0])
+                setFiche(verif)
             }
-            getDemande();
+            getDefaultFiche();
         }
         catch (err) {
             console.log(err)
@@ -92,17 +35,58 @@ function ValidationPR({ dataValidate }) {
 
 
     }, [])
+    console.log(fiche)
+    const {
+        register,
+        handleSubmit,
+        reset,
+        getValues,
+        formState: {
+            isSubmitSuccessful,
+            isSubmitted,
+            isSubmitting
+        }
+    } = useForm({
+        defaultValues: {
+            lettreDemande: fiche?.lettreDemande,
+            carteDeZone: fiche?.carteDeZone,
+            extraitDeCarte: fiche?.extraitDeCarte,
+            statuts: fiche?.statuts,
+            extraitCasierJudiciaire: fiche?.extraitCasierJudiciaire,
+            compteContribuable: fiche?.compteContribuable,
+            rccm: fiche?.rccm,
+            programmeGeneral: fiche?.programmeGeneral,
+            programmeDetaille: fiche?.programmeDetaille,
+            listeDesPostes: fiche?.listeDesPostes,
+            lettreDesignation: fiche?.lettreDesignation,
+            cvRT: fiche?.cvRT,
+            diplomes: fiche?.diplomes,
+            memoire: fiche?.memoire,
+            attestation: fiche?.attestation,
+            releve: fiche?.releve,
+            arf: fiche?.arf,
+            droitFixe: fiche?.droitFixe,
+            declaration: fiche?.declaration,
+            lettreConsentement: fiche?.lettreConsentement
+
+        }
+    });
+
+    useEffect(() => {
+        if (isSubmitSuccessful)
+            reset()
+    }, [isSubmitSuccessful, reset])
 
     const onSubmit = async (data) => {
-        const { numeroDeDemande, ...verification } = data
-        verification.demande = demandePR
-        console.log(verification)
-        const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes/verification', {
+        setFiche(data)
+        console.log(data)
+        const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/
+            fiche-de-verification`, {
             method: "Put",
             headers: {
                 "Content-type": "application/json"
             },
-            body: JSON.stringify(verification)
+            body: JSON.stringify(fiche)
         })
 
     }
@@ -115,7 +99,7 @@ function ValidationPR({ dataValidate }) {
                     <input type='hidden' value={params.id.replaceAll('-', '/')} {...register('numeroDeDemande')} />
                     <div className="p-3">
                         <ItemValidation id={"lettreDemande"} summary={"Lettre de Demande"} register={register}
-                        >
+                            defaultValue={getValues('lettreDemande')}>
                             <p>Une lettre de demande adressée au Ministre chargé des mines dûment signée et
                                 précisant:</p>
                             <ul>
@@ -125,7 +109,7 @@ function ValidationPR({ dataValidate }) {
                             </ul>
                         </ItemValidation>
                         <ItemValidation id={"carteDeZone"} summary={"Carte de la zone couverte sollicité"}
-                            register={register} >
+                            register={register} defaultValue={getValues('carteDeZone')} >
                             <p>
                                 Une carte de la zone couverte sollicitée sur un fond de carte géologique au 1/200000
                                 ou au 1/100 000 produite et authentifiée par l'Administration des mines.<br />
@@ -137,45 +121,43 @@ function ValidationPR({ dataValidate }) {
                         </ItemValidation>
 
                         <ItemValidation id={"extraitDeCarte"} summary={"Extrait de carte"} register={register}
-                        >
+                            defaultValue={getValues('extraitDeCarte')}>
                             <p>
                                 Un extrait de carte de situation au format A4, avec la mention des coordonnées géographiques en
                                 degrés, minutes, secondes des sommets du périmetre du permis de recherche sollictés;
                             </p>
                         </ItemValidation>
 
-                        {(demandePR?.companyOperator) &&
-                            <ItemValidation id={"statuts"} summary={"Statuts"} register={register} >
-                                <p>
-                                    Status enrégistrés pour les personnes morales
-                                </p>
-                            </ItemValidation>
-                        }
+                        <ItemValidation id={"statuts"} summary={"Statuts"} register={register}
+                            defaultValue={getValues('statuts')}>
+                            <p>
+                                Status enrégistrés pour les personnes morales
+                            </p>
+                        </ItemValidation>
 
-                        {(demandePR?.singleOperator) &&
-                            <ItemValidation id={"extraitCasierJudiciaire"} summary={"Un extrait de casier judiciaire"}
-                                register={register} >
-                                <details>
-                                    <summary>Un extrait de casier judiciaire</summary>
-                                    <p>
-                                        Un extrait de casier judiciaire datant de moins de trois mois à compter de
-                                        la date de depôt dudit dossier, et un certificat de résidence  pour les
-                                        personnes physiques
-                                    </p>
-                                </details>
-                            </ItemValidation>
-                        }
+                        <ItemValidation id={"extraitCasierJudiciaire"} summary={"Un extrait de casier judiciaire"}
+                            register={register} defaultValue={getValues('extraitCasierJudiciaire')}>
+                            <details>
+                                <summary>Un extrait de casier judiciaire</summary>
+                                <p>
+                                    Un extrait de casier judiciaire datant de moins de trois mois à compter de
+                                    la date de depôt dudit dossier, et un certificat de résidence  pour les
+                                    personnes physiques
+                                </p>
+                            </details>
+                        </ItemValidation>
+
                         <ItemValidation id={"compteContribuable"} summary={"Numéro de compte contribuable du demandeur"}
-                            register={register} >
+                            register={register} defaultValue={getValues('compteContribuable')}>
                             <p>
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"rccm"} summary={"Registre de commerce avec pour objet recherche minière"}
-                            register={register} >
+                            register={register} defaultValue={getValues('rccm')}>
                             <p></p>
                         </ItemValidation>
                         <ItemValidation id={"programmeGeneral"} summary={"Programme général des travaux sur quatre ans"}
-                            register={register} >
+                            register={register} defaultValue={getValues('programmeGeneral')}>
                             <p>
                                 Le programme général des travaux sur quatre ans décliné année par année, avec le
                                 le coût financier minimum prénu des trvaux chaque année (au moins 1,6 millions
@@ -183,27 +165,27 @@ function ValidationPR({ dataValidate }) {
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"programmeDetaille"} summary={"Programme détaillé des travaux"}
-                            register={register} >
+                            register={register} defaultValue={getValues('programmeDetaille')}>
                             <p>
                                 Le programme détaillé des travaux à réaliser au cours de la première année de la période
                                 de validité du permis sollicité.
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"listeDesPostes"} summary={"Liste des postes prévus par catégorie d'emploi"}
-                            register={register} >
+                            register={register} defaultValue={getValues('listeDesPostes')}>
                             <p>
                                 La liste des postes prévus par catégorie d'emploi (cadre, agent de maitrise,
                                 ouvrier, etc.) pour les travaux sur le périmètre dupermis de recherche sollicté.
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"lettreDesignation"} summary={"Lettre de designation"}
-                            register={register} >
+                            register={register} defaultValue={getValues('lettreDesignation')}>
                             <p>
                                 Une lettre dûment signée de designation du responsale technique des travaux.
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"cvRT"} summary={"Curriculum vitae du responsable technique des travaux"}
-                            register={register} >
+                            register={register} defaultValue={getValues('cvRT')}>
                             <p>
                                 Un curriculum vitae certifié avec photo d'identité du responsable technique
                                 des travaux, retraçant toutes ses expériences professionnelles acquises ou
@@ -211,14 +193,14 @@ function ValidationPR({ dataValidate }) {
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"diplomes"} summary={"Photocopies des diplômes et certificats"}
-                            register={register} >
+                            register={register} defaultValue={getValues('diplomes')}>
                             <p>
                                 Les photocopies légalisées des diplômes, certificats et autres qualifications
                                 professionneles du responsable technique des travaux.
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"memoire"} summary={"Mémoire des expériences du demandeur"}
-                            register={register} >
+                            register={register} defaultValue={getValues('memoire')}>
                             <p>
                                 Un mémoire faisant ressortir les expériences du demandeur en matière
                                 d'exploration ou d'exploitation minière acquises seul ou en partenariat,
@@ -226,7 +208,7 @@ function ValidationPR({ dataValidate }) {
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"attestation"} summary={"Attestation bancaire"}
-                            register={register} >
+                            register={register} defaultValue={getValues('attestation')}>
                             <p>
                                 Une attestation et relevé bancaire justifiant la disponibilité d'au
                                 moins 10% du budget des travaux de recherche de la première année de la
@@ -236,7 +218,7 @@ function ValidationPR({ dataValidate }) {
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"releve"} summary={"Relevé bancaire"}
-                            register={register} >
+                            register={register} defaultValue={getValues('releve')}>
                             <p>
                                 Une attestation et relevé bancaire justifiant la disponibilité d'au
                                 moins 10% du budget des travaux de recherche de la première année de la
@@ -246,31 +228,30 @@ function ValidationPR({ dataValidate }) {
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"arf"} summary={"Attestation de regularité fiscale"}
-                            register={register} >
+                            register={register} defaultValue={getValues('arf')}>
                             <p>
                                 Une attestion de regularité fiscale délivrée par l'Administration des
                                 impôts
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"droitFixe"} summary={"Récépissé de droit fixe"}
-                            register={register} >
+                            register={register} defaultValue={getValues('droitFixe')}>
                             <p>
                                 le récépissé du paiement du droit fixe : 1 000 000 F CFA
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"declaration"} summary={"Déclaration sur l'honneur"}
-                            register={register} >
+                            register={register} defaultValue={getValues('declaration')}>
                             <p>
                                 Déclaration sur l'honneur du demandeur
                             </p>
                         </ItemValidation>
                         <ItemValidation id={"lettreConsentement"} summary={"Lettre de consentement"}
-                            register={register} >
+                            register={register} defaultValue={getValues('lettreConsentement')}>
                             <p>
                                 La lettre de consentement du responsable technique des travaux.
                             </p>
                         </ItemValidation>
-
                     </div>
                     <div>
                         <button className="px-3 py-2 m-3 btn btn-info" type="submit">Enregistrer<i className="bi bi-floppy mx-2"></i></button>

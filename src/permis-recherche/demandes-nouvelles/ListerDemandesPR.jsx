@@ -34,8 +34,8 @@ function ListerDemandesPR() {
                 prevSelectedRows.filter((rowId) => rowId !== id) :
                 [...prevSelectedRows, id]
         ))
-        if (selectedRows.length === 1)
-            setActiveFondDossier(!activeFondDossier)
+        //if (selectedRows.length === 1)
+        //    setActiveFondDossier(!activeFondDossier)
     }
 
     const handleCheckedAll = (e) => {
