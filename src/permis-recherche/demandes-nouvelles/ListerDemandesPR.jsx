@@ -7,6 +7,7 @@ function ListerDemandesPR() {
     const [demandes, setDemandes] = useState([]);
     const [selectedRows, setSelectedRows] = useState([]);
     const [checkedAll, setCheckedAll] = useState(false);
+    const [timer, setTimer] = useState(null)
     //const [activeVerification, setActiveVerification] = useState(false);
     //const [activeFondDossier, setActiveFondDossier] = useState(false);
 
@@ -34,20 +35,24 @@ function ListerDemandesPR() {
                 prevSelectedRows.filter((rowId) => rowId !== id) :
                 [...prevSelectedRows, id]
         ))
-        //if (selectedRows.length === 1)
-        //    setActiveFondDossier(!activeFondDossier)
     }
 
     const handleCheckedAll = (e) => {
         setCheckedAll(!checkedAll)
     }
 
+    const openlink = (numero) => {
+        window.open("demandes/" + numero.replaceAll('/', '-') + "/view", "_blank");
+    }
+
     const rows = demandes.map((element, index) => (
-        <tr key={index} className="table-row" onClick={() => handleChange(index)}>
+        <tr key={index} className="table-row" onClick={() => handleChange(index)}
+            onDoubleClick={() => openlink(element.numeroDeDemande)}>
             <td><input className="form-check-input" type="checkbox"
                 name={element.numeroDeDemande} id={element.numeroDeDemande}
                 checked={selectedRows.includes(index) || checkedAll}
-                onChange={() => (null)} /></td>
+                onChange={() => (null)} />
+            </td>
             <td>{element.numeroDeDemande}</td>
             <td>{element.companyOperator ? element.companyOperator.denomination :
                 element.singleOperator.name}</td>

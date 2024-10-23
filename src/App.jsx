@@ -22,6 +22,7 @@ import AjouterDemandeProspection from './prospections/demandes-nouvelles/Ajouter
 import PDFPreview from './Components/PDFPreview.jsx'
 import ValidationPR from './permis-recherche/demandes-nouvelles/ValidationPR.jsx'
 import FondDossier from './permis-recherche/demandes-nouvelles/FondDossier.jsx'
+import VoirDemandePR from './permis-recherche/demandes-nouvelles/VoirDemandePR.jsx'
 
 const router = createBrowserRouter([
   {
@@ -104,24 +105,24 @@ const router = createBrowserRouter([
         element: <ListerDemandesPR />
       },
       {
-        path: "/permis-recherche/demandes/:id",
-        element: <div>Demande PR</div>
+        path: "/permis-recherche/demandes/:id/view",
+        element: <VoirDemandePR />
       },
       {
         path: "/permis-recherche/demandes/:id/fiche-de-verification",
         element: <ValidationPR />
       },
       {
-        path: "/permis-recherche/demandes/:id/fond-du-dossier",
+        path: "/permis-recherche/demandes/:id/fond-de-dossier",
         element: <FondDossier />
       },
       {
         path: "/permis-recherche/demandes/nouveau",
-        element: <AjouterDemandePR />
+        element: <AjouterDemandePR option={"new"} />
       },
       {
-        path: "/permis-recherche/demandes/editer/:id",
-        element: <div>Demande PR</div>
+        path: "/permis-recherche/demandes/:id/editer",
+        element: <AjouterDemandePR option={"edit"} />
       },
       {
         path: "/permis-exploitation/demandes",

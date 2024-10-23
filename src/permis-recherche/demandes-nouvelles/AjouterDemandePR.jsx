@@ -2,11 +2,61 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import SingleOperator from "../../Components/SingleOperator";
 import CompanyOperator from "../../Components/CompanyOperator";
+import { useParams } from "react-router-dom";
 
-function AjouterDemandePR({ pr }) {
-    const form = useForm({
+function AjouterDemandePR({ option }) {
+    const params = useParams()
+
+    /**
+     * options is used to populate select options 
+     * switchOperator allows to choose a campany operator or a single operator
+     * Both showOperator and showLicence allow to hide or show details of sections
+     * linkErrors is used to stored message errors
+     */
+    const [options, setOptions] = useState([])
+    const [switchOperator, setSwitchOperator] = useState("Company");
+    const [showOperator, setShowOperator] = useState(true);
+    const [showLicence, setShowLicence] = useState(true);
+    const [linkErrors, setLinkErrors] = useState('');
+    const [demande, setDemande] = useState(
+        {
+            companyOperator: null,
+            person: null,
+            numeroDeDemande: null,
+            localite: null,
+            superficie: 0,
+            investissement: 0,
+            fraisAdministration: 0,
+            emploisPrevus: 0,
+            emploisTemporaires: 0,
+            dateDeSoumission: null,
+            statut: "NOUVEAU",
+            substances: [{}]
+        }
+    );
+
+    const { register, handleSubmit, reset, control, formState, watch, setValue } = useForm({
         defaultValues: {
-            associes: [{}]
+            denomination: demande?.companyOperator?.denomination,
+            raisonSociale: demande?.companyOperator?.raisonSociale,
+            capitalSocial: demande?.companyOperator?.capitalSocial,
+            nationalite: demande?.companyOperator?.nationalite,
+            rccm: demande?.companyOperator?.rccm,
+            objectPrincipal: demande?.companyOperator?.objetPrincipal,
+            siegeBoitePostale: demande?.companyOperator?.siegeBoitePostale,
+            contact: demande?.companyOperator?.contact,
+            responsableTechnique: demande?.companyOperator?.responsableTechnique,
+            associes: demande?.companyOperator?.associes ?? [{}],
+            numeroDeDemande: demande?.numeroDeDemande,
+            localite: demande?.localite,
+            superficie: demande?.superficie ?? 0,
+            investissement: demande?.investissement ?? 0,
+            fraisAdministration: demande?.fraisAdministration ?? 0,
+            emploisPrevus: demande?.emploisPrevus ?? 0,
+            emploisTemporaires: demande?.emploisTemporaires ?? 0,
+            dateDeSoumission: demande?.dateDeSoumission,
+            statut: demande?.statut,
+            substances: demande?.substances
         }
     });
 
@@ -14,31 +64,17 @@ function AjouterDemandePR({ pr }) {
      * useState
      * register, handleSubmit, rest, control and formState are the result of form destructuration
      * errors, isSubmitted, isSubmitSuccessful, isSubmitting are the result of form destructuration
-     * options is used to populate select options 
-     * switchOperator allows to choose a campany operator or a single operator
-     * Both showOperator and showLicence allow to hide or show details of sections
-     * linkErrors is used to stored message errors
+     * 
      */
 
-    const { register, handleSubmit, reset, control, formState, watch, setValue } = form;
     const { errors, isSubmitted, isSubmitSuccessful, isSubmitting } = formState
-    const [options, setOptions] = useState([])
-    const [switchOperator, setSwitchOperator] = useState("Company");
-    const [showOperator, setShowOperator] = useState(true);
-    const [showLicence, setShowLicence] = useState(true);
-    const [linkErrors, setLinkErrors] = useState('');
+
 
     /** an object to style error message */
     const errorStyle = { color: "red", fontStyle: "italic" };
 
     const [fraisAdministration, investissement, superficie]
         = watch(['fraisAdministration', 'investissement', 'superficie'])
-
-    /**This function allow the reset of the form */
-    useEffect(() => {
-        if (isSubmitSuccessful)
-            reset()
-    }, [isSubmitSuccessful, reset])
 
     /**This function loads all the substances to populate the Select Options HTML elements */
     useEffect(() => {
@@ -57,11 +93,42 @@ function AjouterDemandePR({ pr }) {
         }
     }, [])
 
+    /**
+     * Cette fonction va cherche une demande de PR selon le numero
+     */
+    useEffect(() => {
+        try {
+            if (params?.id !== null) {
+                const fetchDemande = async () => {
+                    const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}`);
+                    if (!response.ok)
+                        throw new Error('Impossible de contacter le serveur');
+
+                    const dmd = await response.json();
+                    setDemande({ ...dmd[0] })
+                    reset({
+                        ...dmd[0].companyOperator,
+                        ...dmd[0],
+                        ...dmd[0].person
+                    })
+                }
+                fetchDemande()
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    }, [])
+    console.log(demande)
+    /**This function allow the reset of the form */
+    useEffect(() => {
+        if (isSubmitSuccessful)
+            reset()
+    }, [isSubmitSuccessful, reset])
+
     /**This functin is intented to fill the input budgetTravaux and radio which can be only read */
     useEffect(() => {
         const budget = (investissement && fraisAdministration) ? investissement - fraisAdministration : 0;
         const rapport = (budget && superficie) ? (Math.round((budget / superficie) / 1000) / 1000) : 0;
-        console.log(superficie, investissement, fraisAdministration, budget, rapport)
         setValue('budgetTravaux', budget);
         setValue('ratios', rapport);
 
@@ -77,29 +144,30 @@ function AjouterDemandePR({ pr }) {
         )
 
         const companyOperator = {
-            denomination: data.denomination ?? null,
-            raisonSociale: data.raisonSociale ?? null,
-            capitalSocial: data.capitalSocial ?? null,
-            nationalite: data.nationalite ?? null,
-            rccm: data.rccm ?? null,
-            objetPrincipal: data.objetPrincipal ?? null,
-            siegeBoitePostale: data.siege ?? null,
-            contact: data.contact ?? null,
-            responsableTechnique: data.respoTech ?? null,
+            denomination: data?.denomination,
+            raisonSociale: data?.raisonSociale,
+            capitalSocial: data?.capitalSocial,
+            nationalite: data?.nationalite,
+            rccm: data?.rccm,
+            objetPrincipal: data?.objetPrincipal,
+            siegeBoitePostale: data?.siege,
+            contact: data?.contact,
+            responsableTechnique: data?.respoTech,
             associes: associes
         }
 
         const singleOperator = {
-            nom: data.nom ?? null,
-            prenoms: data.prenoms ?? null,
-            sexe: data.sexe ?? null,
-            mobile: data.mobile ?? null,
-            bureau: data.bureau ?? null,
-            email: data.email ?? null,
-            addresse: data.adresse ?? null
+            nom: data?.nom,
+            prenoms: data?.prenoms,
+            sexe: data?.sexe,
+            mobile: data?.mobile,
+            bureau: data?.bureau,
+            email: data?.email,
+            addresse: data?.adresse,
+            rccm: data?.rccm
         }
 
-        const demande = {
+        const nouvelleDemande = {
             "numeroDeDemande": data.numeroDeDemande,
             "localite": data.localite,
             "superficie": data.superficie,
@@ -109,10 +177,9 @@ function AjouterDemandePR({ pr }) {
             "emploisTemporaires": data.emploisTemporaires,
             "dateDeSoumission": data.dateDeSoumission,
             "companyOperator": companyOperator,
-            "singleOperator": singleOperator,
+            "person": singleOperator,
             "statut": data.statut,
             "substances": substances,
-            "ficheVerification": {}
         }
 
         const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes', {
@@ -120,10 +187,10 @@ function AjouterDemandePR({ pr }) {
             headers: {
                 "Content-type": "application/json"
             },
-            body: JSON.stringify(demande)
+            body: JSON.stringify(nouvelleDemande)
         })
-        if (response.ok) {
-
+        if (!response.ok) {
+            throw new Error('Impossible de contacter le serveur.')
         }
     }
 
@@ -161,7 +228,8 @@ function AjouterDemandePR({ pr }) {
                         <div className="mb-3">
                             <label className="form-label" htmlFor="operatorType">Operateur</label>
                             <select name="operatorType" className="form-select" id="operatorType"
-                                onChange={handleOptions} >
+                                onChange={handleOptions}
+                                defaultValue={demande.person === null ? "Company" : "Person"}>
                                 <option value="Company">Personne Morale</option>
                                 <option value="Person">Personne Physique</option>
                             </select>
@@ -222,10 +290,11 @@ function AjouterDemandePR({ pr }) {
                         <div className="mb-3">
                             <label className="form-label" htmlFor="substances">Substance</label>
                             <select id="substances" className="form-control"
+                                defaultValue={demande?.substances?.map(s => (s.id))}
                                 {...register("substances")} multiple>
                                 {
-                                    options.map((option, index) => (
-                                        <option key={option.id} value={index}>{option.substance}</option>
+                                    options.map((option) => (
+                                        <option key={option.id} value={option.id}>{option.substance}</option>
                                     ))
                                 }
                             </select>
@@ -314,10 +383,12 @@ function AjouterDemandePR({ pr }) {
 
                     </div>
 
-                    <div className="mb-3">
-                        <button type="submit" className="px-3 py-2 m-3 btn btn-info">Enregistrer<i className="bi bi-floppy mx-2"></i></button>
-                        <button type="reset" className="px-3 py-2 m-3 btn btn-danger">Annuler</button>
-                    </div>
+                    {(option && option === "view") ??
+                        <div className="mb-3">
+                            <button type="submit" className="px-3 py-2 m-3 btn btn-info" >Enregistrer<i className="bi bi-floppy mx-2"></i></button>
+                            <button type="reset" className="px-3 py-2 m-3 btn btn-danger">Annuler</button>
+                        </div>
+                    }
                 </form >
             </div >
 

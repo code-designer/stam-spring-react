@@ -143,7 +143,7 @@ function CompanyOperator({ operator, register, errors, control, setValue }) {
             <div className="mb-3">
                 <label className="form-label" htmlFor="siege">Siège et boite postale</label>
                 <input type="text" className="form-control" name="siege" id="siege"
-                    {...register("siege",
+                    {...register("siegeBoitePostale",
                         {
                             required: {
                                 value: true,
@@ -169,7 +169,7 @@ function CompanyOperator({ operator, register, errors, control, setValue }) {
             <div className="mb-3">
                 <label className="form-label" htmlFor="respoTech">Responsable technique</label>
                 <input type="tel" className="form-control" name="respoTech" id="respoTech"
-                    {...register("respoTech",
+                    {...register("responsableTechnique",
                         {
                             required: {
                                 value: true,
