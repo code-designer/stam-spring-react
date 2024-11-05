@@ -23,7 +23,7 @@ function FondDossier() {
     useEffect(() => {
         try {
             const getDefaultFiche = async () => {
-                const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/fiche-de-dossier`);
+                const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/fond-de-dossier`);
                 if (!response.ok) {
                     setMessageError("Impossible de se connecter au serveur, veuillez réessayer plus tard")
                     throw new Error("Impossible de recuperer la demande")
@@ -59,7 +59,7 @@ function FondDossier() {
     const onSubmit = async (data) => {
 
         try {
-            const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/fiche-de-dossier`, {
+            const response = await fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/fond-de-dossier`, {
                 method: "Put",
                 headers: {
                     Accept: "application/json",
@@ -83,7 +83,7 @@ function FondDossier() {
     if (messageError === null) {
         return (
             <div className="w-sm-100  w-75 mx-auto my-3 shadow">
-                <h3 className="text-center rounded-top p-3 bg-info">Verification des pièces constitutives du dossier</h3>
+                <h3 className="text-center rounded-top p-3 bg-info">Fond du dossier</h3>
                 <form key={new Date().getTime()} onSubmit={handleSubmit(onSubmit)}>
                     {/*<input type='hidden' value={params.id.replaceAll('-', '/')} {...register('numeroDeDemande')} />*/}
                     <div className="p-3">

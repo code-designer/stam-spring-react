@@ -142,46 +142,50 @@ function AjouterDemandePR({ option }) {
         const substances = data.substances.map(
             x => (options[x])
         )
+        let companyOperator = null;
+        let singleOperator = null;
 
-        const companyOperator = {
-            denomination: data?.denomination,
-            raisonSociale: data?.raisonSociale,
-            capitalSocial: data?.capitalSocial,
-            nationalite: data?.nationalite,
-            rccm: data?.rccm,
-            objetPrincipal: data?.objetPrincipal,
-            siegeBoitePostale: data?.siege,
-            contact: data?.contact,
-            responsableTechnique: data?.respoTech,
-            associes: associes
-        }
-
-        const singleOperator = {
-            nom: data?.nom,
-            prenoms: data?.prenoms,
-            sexe: data?.sexe,
-            mobile: data?.mobile,
-            bureau: data?.bureau,
-            email: data?.email,
-            addresse: data?.adresse,
-            rccm: data?.rccm
+        if (data.selectOperator === "Company") {
+            companyOperator = {
+                denomination: data?.denomination,
+                raisonSociale: data?.raisonSociale,
+                capitalSocial: data?.capitalSocial,
+                nationalite: data?.nationalite,
+                rccm: data?.rccm,
+                objetPrincipal: data?.objetPrincipal,
+                siegeBoitePostale: data?.siegeBoitePostale,
+                contact: data?.contact,
+                responsableTechnique: data?.responsableTechnique,
+                associes: associes
+            }
+        } else {
+            singleOperator = {
+                nom: data?.nom,
+                prenoms: data?.prenoms,
+                sexe: data?.sexe,
+                mobile: data?.mobile,
+                bureau: data?.bureau,
+                email: data?.email,
+                addresse: data?.adresse,
+                rccm: data?.rccm
+            }
         }
 
         const nouvelleDemande = {
-            "numeroDeDemande": data.numeroDeDemande,
-            "localite": data.localite,
-            "superficie": data.superficie,
-            "investissement": data.investissement,
-            "fraisAdministration": data.fraisAdministration,
-            "emploisPrevus": data.emploisPrevus,
-            "emploisTemporaires": data.emploisTemporaires,
-            "dateDeSoumission": data.dateDeSoumission,
-            "companyOperator": companyOperator,
-            "person": singleOperator,
-            "statut": data.statut,
-            "substances": substances,
+            numeroDeDemande: data.numeroDeDemande,
+            localite: data.localite,
+            superficie: data.superficie,
+            investissement: data.investissement,
+            fraisAdministration: data.fraisAdministration,
+            emploisPrevus: data.emploisPrevus,
+            emploisTemporaires: data.emploisTemporaires,
+            dateDeSoumission: data.dateDeSoumission,
+            companyOperator: companyOperator,
+            person: singleOperator,
+            statut: data.statut,
+            substances: substances,
         }
-
+        console.log(nouvelleDemande)
         const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes', {
             method: "POST",
             headers: {
@@ -228,8 +232,9 @@ function AjouterDemandePR({ option }) {
                         <div className="mb-3">
                             <label className="form-label" htmlFor="operatorType">Operateur</label>
                             <select name="operatorType" className="form-select" id="operatorType"
-                                onChange={handleOptions}
-                                defaultValue={demande.person === null ? "Company" : "Person"}>
+                                onChange={handleOptions} {...register("selectOperator", {
+                                    onChange: e => handleOptions(e)
+                                })}>
                                 <option value="Company">Personne Morale</option>
                                 <option value="Person">Personne Physique</option>
                             </select>
@@ -382,12 +387,14 @@ function AjouterDemandePR({ option }) {
                             {...register("statut")} value={"NOUVEAU"} />
 
                     </div>
-
-                    {(option && option === "view") ??
+                    {console.log(option && (option === "new"))}
+                    {(option) ?
                         <div className="mb-3">
                             <button type="submit" className="px-3 py-2 m-3 btn btn-info" >Enregistrer<i className="bi bi-floppy mx-2"></i></button>
                             <button type="reset" className="px-3 py-2 m-3 btn btn-danger">Annuler</button>
                         </div>
+                        :
+                        ""
                     }
                 </form >
             </div >

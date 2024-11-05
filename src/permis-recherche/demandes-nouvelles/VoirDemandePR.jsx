@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import SingleOperator from "../../Components/SingleOperator";
 import CompanyOperator from "../../Components/CompanyOperator";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 function VoirDemandePR() {
     const params = useParams()
@@ -37,7 +37,29 @@ function VoirDemandePR() {
             console.log(err)
         }
     }, [])
-    console.log(demande)
+
+    const generateFile = () => {
+        fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/fiche-technique`,
+            {
+                method: 'GET',
+                header: {
+                    'Content-type': 'application/pdf',
+                }
+            }
+        )
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'fiche-technique-' + params.id + '.pdf'
+                document.body.appendChild(a);
+                a.click();
+                a.parentNode.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error('Error generating PDF:', error));
+    }
     /**This function allow the reset of the form */
 
 
@@ -66,7 +88,6 @@ function VoirDemandePR() {
 
     return (
         <>
-
             <div className="w-sm-100  w-75 mx-auto my-3 shadow">
                 <h3 className="text-center rounded-top p-3 bg-info">Demande de PR N°{demande.numeroDeDemande}</h3>
                 <div className="form p-4" >
@@ -76,7 +97,6 @@ function VoirDemandePR() {
                             {showOperator ? "-" : "+"}
                         </span>
                     </h3>
-
 
                     <div className="row">
                         <div className="mb-3 col-4">
@@ -263,6 +283,11 @@ function VoirDemandePR() {
                             <div className="col-3"></div>
                             <div className="col-3"></div>
                             <div className="col-3"></div>
+                        </div>
+                        <div className="row">
+                            <div className="col-3">
+                                <button type="button" onClick={generateFile}>Fiche Technique</button>
+                            </div>
                         </div>
                     </div>
 

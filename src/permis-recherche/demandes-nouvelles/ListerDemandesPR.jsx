@@ -83,7 +83,8 @@ function ListerDemandesPR() {
                             "/fond-de-dossier"}
 
                             className={(selectedRows.length === 1 &&
-                                demandes[selectedRows[0]].statut === 'COMPLET') ? 'btn' : 'btn disabled'}>
+                                (demandes[selectedRows[0]].statut === 'COMPLET' ||
+                                    demandes[selectedRows[0]].statut === 'CONFORME')) ? 'btn' : 'btn disabled'}>
                             Fond du dossier
                         </Link>
 
