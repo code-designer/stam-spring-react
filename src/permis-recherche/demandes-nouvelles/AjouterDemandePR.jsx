@@ -17,7 +17,7 @@ function AjouterDemandePR({ option }) {
     const [switchOperator, setSwitchOperator] = useState("Company");
     const [showOperator, setShowOperator] = useState(true);
     const [showLicence, setShowLicence] = useState(true);
-    const [linkErrors, setLinkErrors] = useState('');
+    const [message, setMessage] = useState('');
     const [demande, setDemande] = useState(
         {
             companyOperator: null,
@@ -49,11 +49,11 @@ function AjouterDemandePR({ option }) {
             associes: demande?.companyOperator?.associes ?? [{}],
             numeroDeDemande: demande?.numeroDeDemande,
             localite: demande?.localite,
-            superficie: demande?.superficie ?? 0,
-            investissement: demande?.investissement ?? 0,
-            fraisAdministration: demande?.fraisAdministration ?? 0,
-            emploisPrevus: demande?.emploisPrevus ?? 0,
-            emploisTemporaires: demande?.emploisTemporaires ?? 0,
+            superficie: demande?.superficie,
+            investissement: demande?.investissement,
+            fraisAdministration: demande?.fraisAdministration,
+            emploisPrevus: demande?.emploisPrevus,
+            emploisTemporaires: demande?.emploisTemporaires,
             dateDeSoumission: demande?.dateDeSoumission,
             statut: demande?.statut,
             substances: demande?.substances
@@ -107,9 +107,9 @@ function AjouterDemandePR({ option }) {
                     const dmd = await response.json();
                     setDemande({ ...dmd[0] })
                     reset({
-                        ...dmd[0].companyOperator,
+                        ...dmd[0]?.companyOperator,
                         ...dmd[0],
-                        ...dmd[0].person
+                        ...dmd[0]?.person
                     })
                 }
                 fetchDemande()
@@ -196,6 +196,9 @@ function AjouterDemandePR({ option }) {
         if (!response.ok) {
             throw new Error('Impossible de contacter le serveur.')
         }
+        console.log(isSubmitSuccessful)
+        setMessage(`La demande de permis a bien été enregistrée.`)
+        reset()
     }
 
     const handleOptions = (e) => {
@@ -214,10 +217,11 @@ function AjouterDemandePR({ option }) {
         <>
             {
                 isSubmitSuccessful &&
-                <div style={{ backgroundColor: "green" }}>
-                    <p style={{ textAlign: "center" }}>La demande a bien été enrégistrée</p>
+                <div style={{ backgroundColor: "green", padding: "10px" }}>
+                    <p style={{ textAlign: "center" }}>{message}</p>
                 </div>
             }
+            {console.log(isSubmitSuccessful)}
             <div className="w-sm-100  w-75 mx-auto my-3 shadow">
                 <h3 className="text-center rounded-top p-3 bg-info">Ajouter une demande de PR</h3>
                 <form action="" method="post" className="form p-4" onSubmit={handleSubmit(onSubmit)}>
