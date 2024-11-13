@@ -10,6 +10,8 @@ function ListerDemandesPR() {
     const [sortMode, setSortMode] = useState('None')
     const [hovering, setHovering] = useState(false)
 
+    const myRef = useRef()
+
     const sortMethod = {
         None: (a, b) => undefined,
         Numero: (a, b) => { return a.numeroDeDemande < b.numeroDeDemande ? 1 : -1 },
@@ -44,6 +46,13 @@ function ListerDemandesPR() {
             listeDeDemande()
     }, [keyword])
 
+    useEffect(() => {
+        if (selectedRows.length > 0 && selectedRows.length < demandes.length)
+            myRef.current.indeterminate = "indeterminate"
+        else
+            myRef.current.indeterminate = ""
+    })
+
     const handleChange = (id) => {
         setSelectedRows((prevSelectedRows) => (
             prevSelectedRows.includes(id) ?
@@ -53,7 +62,14 @@ function ListerDemandesPR() {
     }
 
     const handleCheckedAll = (e) => {
-        setCheckedAll(!checkedAll)
+        if (selectedRows.length !== demandes.length)
+            setSelectedRows(() => (
+                demandes.map((d, i) => { return i })
+            ))
+        else
+            setSelectedRows([])
+
+        console.log(selectedRows.length, demandes.length)
     }
 
     const openlink = (numero) => {
@@ -89,7 +105,7 @@ function ListerDemandesPR() {
     const tri = (sort) => {
         setSortMode(sort)
     }
-
+    console.log(demandes)
     const rows = demandes.sort(sortMethod[sortMode]).map((element, index) => (
         <tr key={index} className="table-row" onClick={() => handleChange(index)}
             onDoubleClick={() => openlink(element.numeroDeDemande)}
@@ -116,21 +132,21 @@ function ListerDemandesPR() {
                 <h3 className="text-center">DEMANDES DE PERMIS DE RECHERCHE</h3>
                 <div className="d-flex justify-content-between my-3">
                     <div className="me-3">
-                        <Link to="/permis-recherche/demandes/nouveau" className='btn'><i className='bi bi-plus'></i></Link>
-                        <button type='button' className='btn' onClick={handleDelete}
+                        <Link to="/permis-recherche/demandes/nouveau" className='btn btn-outline-info mx-1'><i className='bi bi-plus'></i></Link>
+                        <button type='button' className='btn btn-outline-danger' onClick={handleDelete}
                             disabled={selectedRows.length > 0 ? false : true}><i className='bi bi-trash'></i></button>
 
                         <Link to={"/permis-recherche/demandes/" +
                             (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
                             "/editer"}
-                            className={(selectedRows.length === 1) ? 'btn mx-1' : 'btn disabled mx-1'}>
+                            className={(selectedRows.length === 1) ? 'btn btn-outline-secondary mx-1' : 'btn disabled mx-1'}>
                             <i className="bi bi-pencil-square"></i>
                         </Link>
 
                         <Link to={"/permis-recherche/demandes/" +
                             (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
                             "/fiche-de-verification"}
-                            className={(selectedRows.length === 1) ? 'btn mx-1' : 'btn disabled mx-1'}>
+                            className={(selectedRows.length === 1) ? 'btn btn-outline-success mx-1' : 'btn disabled mx-1'}>
                             <i className="bi bi-file-check"></i>
                         </Link>
 
@@ -140,7 +156,7 @@ function ListerDemandesPR() {
 
                             className={(selectedRows.length === 1 &&
                                 (demandes[selectedRows[0]].statut === 'COMPLET' ||
-                                    demandes[selectedRows[0]].statut === 'CONFORME')) ? 'btn' : 'btn disabled'}>
+                                    demandes[selectedRows[0]].statut === 'CONFORME')) ? 'btn btn-outline-warning' : 'btn disabled'}>
                             <i className="bi bi-folder"></i>
                         </Link>
 
@@ -154,8 +170,9 @@ function ListerDemandesPR() {
                         <thead>
                             <tr>
                                 <th className=""><input className="form-check-input" type="checkbox" name="all" id="all"
-                                    checked={checkedAll}
+                                    checked={selectedRows.length > 0 && selectedRows.length === demandes.length}
                                     onChange={(e) => handleCheckedAll(e)}
+                                    ref={myRef}
                                 /></th>
                                 <th onClick={() => tri('Numero')}>Numéro de la demande</th>
                                 <th onClick={() => tri('Denomination')}>Dénomination</th>

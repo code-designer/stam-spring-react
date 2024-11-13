@@ -1,35 +1,64 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-function SingleOperator({ operator, register }) {
+function SingleOperator({ operator, register, errors, errorStyle }) {
 
     return (
         <div className="mb-3" id="person">
             <div className="mb-3">
-                <label className="form-label" htmlFor="nameLastName">Nom</label>
-                <input type="text" className="form-control" name="nameLastName"
-                    id="nameLastName" {...register("nameLastName")} />
+                <label className="form-label" htmlFor="rccm">RCCM</label>
+                <input type="text" className="form-control"
+                    id="rccm" {...register("rccm", {
+                        required: {
+                            value: true,
+                            message: "Ce champ est obligatoire"
+                        }
+                    })} />
+                <p style={errorStyle}>{errors.rccm?.message}</p>
             </div>
             <div className="mb-3">
-                <label className="form-label" htmlFor="nameFirstName">Prenoms</label>
-                <input type="text" className="form-control" name="nameFirstName" id="nameFirstName"
-                    {...register("nameFirstName")} />
+                <label className="form-label" htmlFor="lastName">Nom</label>
+                <input type="text" className="form-control"
+                    id="lastName" {...register("lastName", {
+                        required: {
+                            value: true,
+                            message: "Ce champ est obligatoire"
+                        }
+                    })} />
+                <p style={errorStyle}>{errors.lastName?.message}</p>
+            </div>
+            <div className="mb-3">
+                <label className="form-label" htmlFor="firstName">Prenoms</label>
+                <input type="text" className="form-control" id="firstName"
+                    {...register("firstName", {
+                        required: {
+                            value: true,
+                            message: "Ce champ est obligatoire"
+                        }
+                    })} />
+                <p style={errorStyle}>{errors.firstName?.message}</p>
             </div>
             <div className="form-check mb-3 form-check-inline">
                 <label htmlFor="sex">Sexe</label>
             </div>
             <div className="form-check mb-3 form-check-inline">
-                <input type="radio" className="form-check-input" name="sex" value="feminin" id="female" />
+                <input type="radio" className="form-check-input" name="sex" value="Female" id="female" />
                 <label htmlFor="female" className="form-check-label">Féminin</label><br />
             </div>
             <div className="form-check mb-3 form-check-inline">
-                <input type="radio" className="form-check-input" name="sex" value="masculin" id="male" />
+                <input type="radio" className="form-check-input" name="sex" value="Male" id="male" />
                 <label htmlFor="male" className="form-check-label">Masculin</label>
             </div>
             <div className="mb-3">
                 <label className="form-label" htmlFor="mobile">Mobile</label>
                 <input type="tel" className="form-control" name="mobile" id="mobile"
-                    {...register("mobile")} />
+                    {...register("mobile", {
+                        required: {
+                            value: true,
+                            message: "Ce champ est obligatoire"
+                        }
+                    })} />
+                <p style={errorStyle}>{errors.mobile?.message}</p>
             </div>
             <div className="mb-3">
                 <label className="form-label" htmlFor="phone">Bureau</label>
@@ -39,7 +68,13 @@ function SingleOperator({ operator, register }) {
             <div className="mb-3">
                 <label className="form-label" htmlFor="mail">E-mail</label>
                 <input type="mail" className="form-control" name="mail" id="mail"
-                    {...register("mail")} />
+                    {...register("email", {
+                        required: {
+                            value: true,
+                            message: "Ce champ est obligatoire"
+                        }
+                    })} />
+                <p style={errorStyle}>{errors.email?.message}</p>
             </div>
             <div className="mb-3">
                 <label className="form-label" htmlFor="address">Adresse</label>

@@ -106,7 +106,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/permis-recherche/demandes/:id/view",
-        element: <VoirDemandePR option={"view"} />
+        element: <VoirDemandePR option={"VIEW"} />
       },
       {
         path: "/permis-recherche/demandes/:id/fiche-de-verification",
@@ -118,11 +118,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/permis-recherche/demandes/nouveau",
-        element: <AjouterDemandePR option={true} />
+        element: <AjouterDemandePR option={"NEW"} />
       },
       {
         path: "/permis-recherche/demandes/:id/editer",
-        element: <AjouterDemandePR option={true} />
+        element: <AjouterDemandePR option={"EDIT"} />
       },
       {
         path: "/permis-exploitation/demandes",

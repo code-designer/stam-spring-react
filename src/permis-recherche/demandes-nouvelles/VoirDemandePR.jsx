@@ -286,7 +286,8 @@ function VoirDemandePR() {
                         </div>
                         <div className="row">
                             <div className="col-3">
-                                <button type="button" onClick={generateFile}>Fiche Technique</button>
+                                <button type="button" onClick={generateFile}
+                                    disabled={demande.statut === 'COMPLET' ? false : true}>Fiche Technique</button>
                             </div>
                         </div>
                     </div>

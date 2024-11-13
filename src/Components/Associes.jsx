@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useFieldArray } from "react-hook-form";
 
 function Associes({ register, errors, control }) {
@@ -11,11 +10,6 @@ function Associes({ register, errors, control }) {
     const errorStyle = { color: "red", fontStyle: "italic" };
     const style = {
         border: "none"
-    }
-
-    const handleDelRow = (i) => {
-        if (i > 0)
-            remove(i - 1)
     }
 
     const rows = fields.map((field, index) => (
@@ -46,17 +40,23 @@ function Associes({ register, errors, control }) {
                         message: "Tous les champs de cette ligne sont obligatoires"
                     }
                 })} /></td>
+            <td>
+                <button type="button"
+                    onClick={() => remove(index)} style={{ fontSize: "0.7rem", padding: "0.2rem 0.4rem" }}
+                    className="btn btn-outline-danger btn-sm"><i className="bi bi-trash"></i></button>
+            </td>
         </tr >
     ))
 
     return (
-        <div>
+        <div className="table-responsive">
             <table className="table">
                 <thead>
                     <tr>
                         <th>ASSOCIES</th>
                         <th>NATIONALITE</th>
                         <th>PARTS (%)</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,10 +66,7 @@ function Associes({ register, errors, control }) {
             <p style={errorStyle}>{errors.length !== 0 ? "Tous les champs de cette ligne sont obligatoires" : ""}</p>
             <button type="button"
                 onClick={() => append({ nomAssocie: "", nationaliteAssocie: "", partAssocie: "" })}
-                className="m-1"><i className="bi bi-plus"></i></button>
-            <button type="button"
-                onClick={() => handleDelRow(fields.length)}
-                className="m-1"><i className="bi bi-trash"></i></button>
+                className="m-1 btn btn-outline-info"><i className="bi bi-plus"></i></button>
         </div>
     )
 }

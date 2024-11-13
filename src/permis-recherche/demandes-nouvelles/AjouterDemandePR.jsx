@@ -37,6 +37,8 @@ function AjouterDemandePR({ option }) {
 
     const { register, handleSubmit, reset, control, formState, watch, setValue } = useForm({
         defaultValues: {
+            associes: [{}]
+            /*
             denomination: demande?.companyOperator?.denomination,
             raisonSociale: demande?.companyOperator?.raisonSociale,
             capitalSocial: demande?.companyOperator?.capitalSocial,
@@ -57,6 +59,7 @@ function AjouterDemandePR({ option }) {
             dateDeSoumission: demande?.dateDeSoumission,
             statut: demande?.statut,
             substances: demande?.substances
+            */
         }
     });
 
@@ -89,7 +92,7 @@ function AjouterDemandePR({ option }) {
             }
             fetchSubstances()
         } catch (err) {
-            setLinkErrors(err.message)
+            console.log(err)
         }
     }, [])
 
@@ -106,10 +109,14 @@ function AjouterDemandePR({ option }) {
 
                     const dmd = await response.json();
                     setDemande({ ...dmd[0] })
+                    const subs = dmd[0].substances.map(sub => (sub.id.toString()))
                     reset({
                         ...dmd[0]?.companyOperator,
+                        ...dmd[0]?.companyOperator.associes,
                         ...dmd[0],
-                        ...dmd[0]?.person
+                        ...dmd[0]?.person,
+                        substances: subs
+
                     })
                 }
                 fetchDemande()
@@ -118,13 +125,14 @@ function AjouterDemandePR({ option }) {
             console.log(err)
         }
     }, [])
-    console.log(demande)
+
     /**This function allow the reset of the form */
+    /**
     useEffect(() => {
         if (isSubmitSuccessful)
             reset()
     }, [isSubmitSuccessful, reset])
-
+    
     /**This functin is intented to fill the input budgetTravaux and radio which can be only read */
     useEffect(() => {
         const budget = (investissement && fraisAdministration) ? investissement - fraisAdministration : 0;
@@ -138,10 +146,11 @@ function AjouterDemandePR({ option }) {
     const onSubmit = async (data) => {
 
         const associes = data.associes;
+        console.log('Associés', associes)
+        const substances = options.filter(option => (data.substances.includes(option.id.toString())))
+        console.log(options, data.substances)
+        console.log('Substances =>', substances)
 
-        const substances = data.substances.map(
-            x => (options[x])
-        )
         let companyOperator = null;
         let singleOperator = null;
 
@@ -186,8 +195,20 @@ function AjouterDemandePR({ option }) {
             substances: substances,
         }
         console.log(nouvelleDemande)
-        const response = await fetch('http://localhost:8080/api/v1/permis-recherche/demandes', {
-            method: "POST",
+        let sendingMode = ''
+        let url = ''
+        if (option === "NEW") {
+            sendingMode = "POST"
+            url = 'http://localhost:8080/api/v1/permis-recherche/demandes'
+        }
+
+        if (option === "EDIT") {
+            sendingMode = "PUT"
+            url = `http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}`
+        }
+        console.log('Mode', sendingMode)
+        const response = await fetch(url, {
+            method: sendingMode,
             headers: {
                 "Content-type": "application/json"
             },
@@ -217,11 +238,11 @@ function AjouterDemandePR({ option }) {
         <>
             {
                 isSubmitSuccessful &&
-                <div style={{ backgroundColor: "green", padding: "10px" }}>
-                    <p style={{ textAlign: "center" }}>{message}</p>
+                <div style={{ backgroundColor: "greenlight", padding: "10px" }}>
+                    <h3 style={{ textAlign: "center" }}>{message}</h3>
                 </div>
             }
-            {console.log(isSubmitSuccessful)}
+
             <div className="w-sm-100  w-75 mx-auto my-3 shadow">
                 <h3 className="text-center rounded-top p-3 bg-info">Ajouter une demande de PR</h3>
                 <form action="" method="post" className="form p-4" onSubmit={handleSubmit(onSubmit)}>
@@ -244,7 +265,8 @@ function AjouterDemandePR({ option }) {
                             </select>
                         </div>
                         {
-                            switchOperator === "Person" ? <SingleOperator register={register} /> :
+                            switchOperator === "Person" ? <SingleOperator register={register}
+                                errorStyle={errorStyle} errors={errors} /> :
                                 <CompanyOperator register={register} control={control} errors={errors}
                                     setValue={setValue} />
                         }
@@ -259,7 +281,7 @@ function AjouterDemandePR({ option }) {
                     <div className="mb-3 ms-3" style={{ display: showLicence ? "block" : "none" }}>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="numeroDeDemande">Numéro de demande</label>
-                            <input type="text" className="form-control" name="numeroDeDemande" id="numeroDeDemande"
+                            <input type="text" className="form-control" id="numeroDeDemande"
                                 {...register("numeroDeDemande",
                                     {
                                         required: {
@@ -271,7 +293,7 @@ function AjouterDemandePR({ option }) {
                         </div>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="localite">Localité</label>
-                            <input type="text" className="form-control" name="localite" id="localite"
+                            <input type="text" className="form-control" id="localite"
                                 {...register("localite",
                                     {
                                         required: {
@@ -284,7 +306,7 @@ function AjouterDemandePR({ option }) {
                         </div>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="superficie">Superficie (km<sup>2</sup>)</label>
-                            <input type="number" step="0.01" className="form-control"
+                            <input type="number" step="0.01" className="form-control" id="superficie"
                                 {...register("superficie",
                                     {
                                         required: {
@@ -297,8 +319,8 @@ function AjouterDemandePR({ option }) {
                             <p style={errorStyle}>{errors.superficie?.message}</p>
                         </div>
                         <div className="mb-3">
-                            <label className="form-label" htmlFor="substances">Substance</label>
-                            <select id="substances" className="form-control"
+                            <label className="form-label" htmlFor="substances">Substances</label>
+                            <select className="form-control" id="substances"
                                 defaultValue={demande?.substances?.map(s => (s.id))}
                                 {...register("substances")} multiple>
                                 {
@@ -343,7 +365,7 @@ function AjouterDemandePR({ option }) {
                         <div className="mb-3">
                             <label className="form-label" htmlFor="ratios">Ratio budget prévisonnel des
                                 travaux sur la superficie sollicitée (millions /km<sup>2</sup>)</label>
-                            <input type="number" step="0.01" className="form-control"
+                            <input type="number" step="0.01" className="form-control" id="ratios"
                                 {...register("ratios")} readOnly />
                         </div>
                         <div className="mb-3">
@@ -376,7 +398,7 @@ function AjouterDemandePR({ option }) {
                         </div>
                         <div className="mb-3">
                             <label className="form-label" htmlFor="dateDeSoumission">Date de soumission</label>
-                            <input type="date" className="form-control" name="dateDeSoumission" id="dateDeSoumission"
+                            <input type="date" className="form-control" id="dateDeSoumission"
                                 {...register("dateDeSoumission",
                                     {
                                         required: {
@@ -387,14 +409,17 @@ function AjouterDemandePR({ option }) {
                                 )} />
                             <p style={errorStyle}>{errors.dateDeSoumission?.message}</p>
                         </div>
-                        <input type="hidden" className="form-control" name="statut" id="statut"
-                            {...register("statut")} value={"NOUVEAU"} />
+                        <input type="hidden" className="form-control" id="statut"
+                            {...register("statut")} value={option === "NEW" ? "NOUVEAU" : demande.statut} />
 
                     </div>
-                    {console.log(option && (option === "new"))}
-                    {(option) ?
+
+                    {(option === "NEW" || option === "EDIT") ?
                         <div className="mb-3">
-                            <button type="submit" className="px-3 py-2 m-3 btn btn-info" >Enregistrer<i className="bi bi-floppy mx-2"></i></button>
+                            <button type="submit" className="px-3 py-2 m-3 btn btn-info" >
+                                {option === "NEW" ? "Enregistrer" : "Modifier"}
+                                <i className="bi bi-floppy mx-2"></i>
+                            </button>
                             <button type="reset" className="px-3 py-2 m-3 btn btn-danger">Annuler</button>
                         </div>
                         :
