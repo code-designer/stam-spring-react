@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import SearchBar from '../../Components/SearchBar.jsx';
 import { Link } from 'react-router-dom';
+import DialogBox from "../../Components/ConfirmBox.jsx";
+import TableRow from '../../Components/TableRow.jsx';
 
 function ListerDemandesPR() {
     const [keyword, setKeyword] = useState('');
@@ -8,7 +10,7 @@ function ListerDemandesPR() {
     const [selectedRows, setSelectedRows] = useState([])
     const [checkedAll, setCheckedAll] = useState(false)
     const [sortMode, setSortMode] = useState('None')
-    const [hovering, setHovering] = useState(false)
+    const [popup, setPopup] = useState(false)
 
     const myRef = useRef()
 
@@ -72,10 +74,6 @@ function ListerDemandesPR() {
         console.log(selectedRows.length, demandes.length)
     }
 
-    const openlink = (numero) => {
-        window.open("demandes/" + numero.replaceAll('/', '-') + "/view", "_blank");
-    }
-
     const supprimerDemande = (idx) => {
         const dmd = demandes[idx]
         fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${dmd.numeroDeDemande.replaceAll('/', '-')}`, {
@@ -107,6 +105,15 @@ function ListerDemandesPR() {
     }
     console.log(demandes)
     const rows = demandes.sort(sortMethod[sortMode]).map((element, index) => (
+        <TableRow element={element}
+            key={index}
+            index={index}
+            selectedRows={selectedRows}
+            checkedAll={checkedAll}
+            box={setPopup}
+            handleChange={handleChange}
+            handleCheckedAll={handleCheckedAll}></TableRow>
+        /*
         <tr key={index} className="table-row" onClick={() => handleChange(index)}
             onDoubleClick={() => openlink(element.numeroDeDemande)}
         >
@@ -123,43 +130,27 @@ function ListerDemandesPR() {
             <td>{element.localite}</td>
             <td>{element.dateDeSoumission}</td>
             <td>{element.statut}</td>
-        </tr>)
+        </tr>*/)
     );
 
     return (
         <>
+            {
+                popup &&
+                <DialogBox title={"Confirmation"} visibiliy={setPopup} callback={handleDelete}
+                    message={`Vous êtes sur le point de supprimer une demande de permis.
+                        Voulez-vous continuez?`} />
+            }
             <div className="mx-auto">
                 <h3 className="text-center">DEMANDES DE PERMIS DE RECHERCHE</h3>
                 <div className="d-flex justify-content-between my-3">
                     <div className="me-3">
                         <Link to="/permis-recherche/demandes/nouveau" className='btn btn-outline-info mx-1'><i className='bi bi-plus'></i></Link>
-                        <button type='button' className='btn btn-outline-danger' onClick={handleDelete}
-                            disabled={selectedRows.length > 0 ? false : true}><i className='bi bi-trash'></i></button>
-
-                        <Link to={"/permis-recherche/demandes/" +
-                            (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
-                            "/editer"}
-                            className={(selectedRows.length === 1) ? 'btn btn-outline-secondary mx-1' : 'btn disabled mx-1'}>
-                            <i className="bi bi-pencil-square"></i>
-                        </Link>
-
-                        <Link to={"/permis-recherche/demandes/" +
-                            (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
-                            "/fiche-de-verification"}
-                            className={(selectedRows.length === 1) ? 'btn btn-outline-success mx-1' : 'btn disabled mx-1'}>
-                            <i className="bi bi-file-check"></i>
-                        </Link>
-
-                        <Link to={"/permis-recherche/demandes/" +
-                            (demandes[selectedRows[0]]?.numeroDeDemande)?.replaceAll('/', '-') +
-                            "/fond-de-dossier"}
-
-                            className={(selectedRows.length === 1 &&
-                                (demandes[selectedRows[0]].statut === 'COMPLET' ||
-                                    demandes[selectedRows[0]].statut === 'CONFORME')) ? 'btn btn-outline-warning' : 'btn disabled'}>
-                            <i className="bi bi-folder"></i>
-                        </Link>
-
+                        {
+                            (selectedRows.length > 1) && <button type='button' className='btn btn-outline-danger'
+                                onClick={() => setPopup(true)}
+                                disabled={selectedRows.length > 0 ? false : true}><i className='bi bi-trash'></i></button>
+                        }
                     </div>
                     <div className="me-3">
                         <SearchBar onSearch={setKeyword} />

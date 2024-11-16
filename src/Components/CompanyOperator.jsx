@@ -51,7 +51,7 @@ function CompanyOperator({ operator, register, errors, control, setValue }) {
         <div className="mb-3" id="company">
             <div className="mb-3" style={styleParent}>
                 <label className="form-label" htmlFor="rccm">RCCM</label>
-                <input type="text" className="form-control" name="rccm" id="rccm"
+                <input type="text" className="form-control" id="rccm"
                     {...register("rccm",
                         {
                             required:
