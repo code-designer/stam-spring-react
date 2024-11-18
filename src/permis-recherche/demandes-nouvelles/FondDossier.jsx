@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
 import ItemValidation from "../../Components/ItemValidation";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function FondDossier() {
     const params = useParams();
+    const navigate = useNavigate();
     const [messageError, setMessageError] = useState(null);
     const [fondDossier, setFondDossier] = useState(null);
     const {
@@ -69,8 +70,10 @@ function FondDossier() {
             })
 
             if (!response.ok) {
-                console.log("Impossible d'etablir une connexion avec le serveur.")
+                throw new Error("Impossible d'etablir une connexion avec le serveur.")
             }
+            else
+                navigate('/permis-recherche/demandes');
 
 
         } catch (err) {
@@ -248,9 +251,24 @@ function FondDossier() {
                             </p>
                         </ItemValidation>
                         <div>
-                            <label className="w-100">Observations</label>
+                            <label className="w-100">Experience du responsable technique</label>
                             <textarea rows="7" className="w-100 border border-info p-2"
+                                {...register('obsCritereTech')}></textarea>
+                        </div>
+                        <div>
+                            <label className="w-100">Expérience technique de la société</label>
+                            <textarea rows="5" className="w-100 border border-info p-2"
+                                {...register('obsCritereTech2')}></textarea>
+                        </div>
+                        <div>
+                            <label className="w-100">Plan financier</label>
+                            <textarea rows="5" className="w-100 border border-info p-2"
                                 {...register('observations')}></textarea>
+                        </div>
+                        <div>
+                            <label className="w-100">Observations</label>
+                            <textarea rows="5" className="w-100 border border-info p-2"
+                                {...register('ObsCapaciteFin')}></textarea>
                         </div>
                     </div>
                     <div>

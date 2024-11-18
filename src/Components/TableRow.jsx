@@ -11,7 +11,8 @@ const TableRow = (props) => {
     const index = props.index
     const checkedAll = props.checkedAll
     const handleChange = props.handleChange
-    const displayBox = props.box
+    const displayWarningBox = props.warningbox
+    const displayLoadFileBox = props.loadfilebox
 
     const openlink = (numero) => {
         window.open("demandes/" + numero.replaceAll('/', '-') + "/view", "_blank");
@@ -40,7 +41,7 @@ const TableRow = (props) => {
                     display ?
                         <td>
                             <button type='button' className='btn btn-outline-danger' style={style}
-                                onClick={() => displayBox(true)}>
+                                onClick={() => displayWarningBox(true)}>
                                 <i className='bi bi-trash'></i></button>
 
                             <Link to={"/permis-recherche/demandes/" +
@@ -61,10 +62,15 @@ const TableRow = (props) => {
                                 (element?.numeroDeDemande)?.replaceAll('/', '-') +
                                 "/fond-de-dossier"}
                                 style={style}
-                                className={(element?.statut === 'COMPLET' ||
-                                    element?.statut === 'NON_CONFORME') ? 'btn btn-outline-warning' : 'btn disabled'}>
+                                className={'btn btn-outline-warning'}>
                                 <i className="bi bi-folder"></i>
                             </Link>
+                            <button type="button"
+                                onClick={() => displayLoadFileBox(element.numeroDeDemande)}
+                                className="btn btn-outline-info mx-1"
+                                style={style}>
+                                <i className="bi bi-upload"></i>
+                            </button>
                         </td>
                         :
                         <td>{element.statut}</td>

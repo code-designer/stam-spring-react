@@ -7,7 +7,7 @@ const InfoBox = ({ title, message, visibiliy }) => {
 
     return <>
         <div className="position-fixed top-0 start-0 vw-100 vh-100 d-flex 
-        justify-content-center align-items-center z-1">
+        justify-content-center align-items-center z-2">
             <div className="d-block rounded w-25 w-sm-100 shadow bg-light" >
                 <h5 className="p-2 bg-danger rounded-top">{title}</h5>
                 <div className="p-1" >

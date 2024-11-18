@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import SingleOperator from "../../Components/SingleOperator";
-import CompanyOperator from "../../Components/CompanyOperator";
+import SingleOperator from "../../operateurs/SingleOperator";
+import CompanyOperator from "../../operateurs/CompanyOperator";
 
 function AjouterProspection({ pros }) {
     const form = useForm({

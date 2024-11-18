@@ -3,14 +3,16 @@ import SearchBar from '../../Components/SearchBar.jsx';
 import { Link } from 'react-router-dom';
 import DialogBox from "../../Components/ConfirmBox.jsx";
 import TableRow from '../../Components/TableRow.jsx';
+import LoadFile from '../../Components/LoadFile.jsx';
 
 function ListerDemandesPR() {
     const [keyword, setKeyword] = useState('');
     const [demandes, setDemandes] = useState([]);
     const [selectedRows, setSelectedRows] = useState([])
-    const [checkedAll, setCheckedAll] = useState(false)
+    const [checkedAll, setCheckedAll] = useState(false) // I can delete this line
     const [sortMode, setSortMode] = useState('None')
     const [popup, setPopup] = useState(false)
+    const [popupFile, setPopupFile] = useState(null)
 
     const myRef = useRef()
 
@@ -110,7 +112,8 @@ function ListerDemandesPR() {
             index={index}
             selectedRows={selectedRows}
             checkedAll={checkedAll}
-            box={setPopup}
+            warningbox={setPopup}
+            loadfilebox={setPopupFile}
             handleChange={handleChange}
             handleCheckedAll={handleCheckedAll}></TableRow>
         /*
@@ -140,6 +143,13 @@ function ListerDemandesPR() {
                 <DialogBox title={"Confirmation"} visibiliy={setPopup} callback={handleDelete}
                     message={`Vous êtes sur le point de supprimer une demande de permis.
                         Voulez-vous continuez?`} />
+            }
+            {
+                popupFile &&
+                <LoadFile
+                    url={`http://localhost:8080/api/v1/permis-recherche/demandes/${popupFile?.replaceAll('/', '-')}/assets`}
+                    param={popupFile}
+                    visibility={setPopupFile} />
             }
             <div className="mx-auto">
                 <h3 className="text-center">DEMANDES DE PERMIS DE RECHERCHE</h3>

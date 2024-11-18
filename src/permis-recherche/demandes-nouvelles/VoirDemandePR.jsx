@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import SingleOperator from "../../Components/SingleOperator";
-import CompanyOperator from "../../Components/CompanyOperator";
+import SingleOperator from "../../operateurs/SingleOperator";
+import CompanyOperator from "../../operateurs/CompanyOperator";
 import { Link, useParams } from "react-router-dom";
+import ConfirmBox from "../../Components/ConfirmBox";
 
 function VoirDemandePR() {
     const params = useParams()
@@ -17,8 +18,14 @@ function VoirDemandePR() {
     const [switchOperator, setSwitchOperator] = useState("Company");
     const [showOperator, setShowOperator] = useState(true);
     const [showLicence, setShowLicence] = useState(true);
-    const [linkErrors, setLinkErrors] = useState('');
+    const [showOthers, setShowOthers] = useState(true);
+    const [showDialog, setShowDialog] = useState(false);
     const [demande, setDemande] = useState({});
+    const [fichiers, setFichiers] = useState([])
+    const [resource, setResource] = useState(null);
+
+    const racine = "http://localhost:8080/api/v1/permis-recherche/demandes/";
+    const style = { fontSize: "0.7rem", padding: "0.2rem 0.4rem" }
 
     useEffect(() => {
         try {
@@ -37,6 +44,17 @@ function VoirDemandePR() {
             console.log(err)
         }
     }, [])
+
+    useEffect(() => {
+        fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/assets`)
+            .then(response => response.json())
+            .then(data => setFichiers([...data]))
+            .catch(err => {
+                console.log(err)
+            })
+    }, [])
+
+    console.log('fichiers', fichiers)
 
     const generateFile = () => {
         fetch(`http://localhost:8080/api/v1/permis-recherche/demandes/${params.id}/fiche-technique`,
@@ -85,6 +103,34 @@ function VoirDemandePR() {
     const handleShowLicence = () => {
         setShowLicence(!showLicence);
     }
+
+    const handleShowOthers = () => {
+        setShowOthers(!showOthers);
+    }
+
+    const loadFile = (filename) => {
+        window.open(racine + params.id + '/assets/' + filename, '_blank')
+    }
+
+    const deleteResource = (filename) => {
+        fetch(racine + params.id + '/assets/' + filename, {
+            method: "delete"
+        })
+            .then(response => {
+                if (!response.ok)
+                    throw new Error("Impossible de supprimer cette resource")
+
+                setFichiers(prevFichier => (
+                    prevFichier.filter(f => f !== filename)
+                ))
+
+            })
+            .catch((err) => {
+                console.log(err.message)
+            })
+    }
+
+    console.log(demande)
 
     return (
         <>
@@ -235,7 +281,7 @@ function VoirDemandePR() {
                             <div className="mb-3 col-4">
                                 <label className="form-label" htmlFor="budgetTravaux">Budget prévisionnel (F CFA)</label>
                                 <input type="number" step="0.01" className="form-control" name="budgetTravaux"
-                                    id="budgetTravaux" value={demande.investissement - demande.fraisAdministration} readOnly />
+                                    id="budgetTravaux" value={demande?.investissement - demande?.fraisAdministration} readOnly />
                             </div>
                         </div>
                         <div className="row">
@@ -271,30 +317,55 @@ function VoirDemandePR() {
 
                     </div>
 
-                    <h3 className="w-auto p-2 bg-light" onClick={handleShowLicence}>Compléments
+                    <h3 className="w-auto p-2 bg-light" onClick={handleShowOthers}>Compléments
                         <span style={{ float: "right" }}>
                             {showLicence ? "-" : "+"}
                         </span>
                     </h3>
 
-                    <div className="mb-3 ms-3" style={{ display: showLicence ? "block" : "none" }}>
+                    <div className="mb-3 ms-3" style={{ display: showOthers ? "block" : "none" }}>
                         <div className="row">
-                            <div className="col-3"></div>
-                            <div className="col-3"></div>
-                            <div className="col-3"></div>
-                            <div className="col-3"></div>
+                            <table className="table mb-2">
+                                {
+                                    fichiers.map(fichier => (
+                                        <tr>
+                                            <td>
+                                                <a style={{ cursor: "pointer" }}
+                                                    onClick={() => loadFile(fichier)}>{fichier}</a>
+                                            </td>
+                                            <td>
+                                                <button style={style}
+                                                    className="btn btn-outline-danger"
+                                                    onClick={() => {
+                                                        setShowDialog(true)
+                                                        setResource(fichier)
+                                                    }}>
+                                                    <i className="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </table>
                         </div>
                         <div className="row">
                             <div className="col-3">
-                                <button type="button" onClick={generateFile}
-                                    disabled={demande.statut === 'COMPLET' ? false : true}>Fiche Technique</button>
+                                <button type="button" className="btn bg-info" onClick={generateFile}
+                                    disabled={demande.statut === 'CONFORME' ? false : true}>Fiche Technique</button>
                             </div>
                         </div>
                     </div>
-
-
                 </div >
             </div >
+
+            {
+                showDialog && <ConfirmBox title={"Suppression"}
+                    message={`Vous êtes sur le point de supprimer un fichier.
+                    Voulez-vous continuez?`}
+                    visibiliy={setShowDialog}
+                    callback={() => deleteResource(resource)}
+                />
+            }
 
         </>
     )
